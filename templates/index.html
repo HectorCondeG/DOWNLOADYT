@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Downloader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0f;
+      --surface: #16161a;
+      --surface2: #1e1e24;
+      --border: #2a2a35;
+      --red: #ff2d2d;
+      --red-dim: #cc1f1f;
+      --text: #eeeef0;
+      --muted: #6b6b80;
+      --wmv: #3b9eff;
+      --success: #22d37a;
+      --error: #ff4f4f;
+    }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 80px;
+    }
+
+    /* Background grain */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--red);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    h1 span { color: var(--red); }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-family: 'DM Mono', monospace;
+      margin-top: 6px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    /* URL Input */
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus { border-color: var(--red); }
+    input[type="text"]::placeholder { color: var(--muted); }
+
+    .btn {
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: var(--red-dim); }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; }
+
+    .btn-download {
+      width: 100%;
+      padding: 16px;
+      font-size: 1rem;
+      margin-top: 16px;
+      border-radius: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Video info */
+    #info-box { display: none; }
+
+    .video-preview {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .thumbnail-wrap {
+      flex-shrink: 0;
+      width: 140px;
+      height: 80px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface2);
+    }
+
+    .thumbnail-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .video-meta { flex: 1; min-width: 0; }
+
+    .video-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      line-height: 1.3;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .video-duration {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--surface2);
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 5px;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+
+    /* Format selector */
+    label.field-label {
+      display: block;
+      font-size: 0.75rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b80' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      transition: border-color 0.2s;
+    }
+
+    select:focus { border-color: var(--red); }
+
+    /* Status */
+    #status-box {
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #status-box.info    { background: #1a1a2e; border: 1px solid #2a2a50; color: #8888cc; display: flex; }
+    #status-box.success { background: #0d2018; border: 1px solid #1a3d2a; color: var(--success); display: flex; }
+    #status-box.error   { background: #200d0d; border: 1px solid #3d1a1a; color: var(--error); display: flex; }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer */
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-family: 'DM Mono', monospace;
+    }
+
+    footer a { color: var(--muted); text-decoration: underline; }
+
+    /* Fade in animation */
+    .fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="logo">
+        <div class="logo-icon">▶</div>
+        <h1>YT<span>Down</span></h1>
+      </div>
+      <p class="subtitle">descarga videos · elige tu formato</p>
+    </header>
+
+    <!-- URL Input -->
+    <div class="card">
+      <div class="input-row">
+        <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." />
+        <button class="btn" onclick="getInfo()" id="btn-search">Buscar</button>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div id="status-box">
+      <div class="spinner" id="spinner" style="display:none"></div>
+      <span id="status-text"></span>
+    </div>
+
+    <!-- Video Info + Download -->
+    <div class="card fade-in" id="info-box">
+      <div class="video-preview">
+        <div class="thumbnail-wrap">
+          <img id="thumbnail" src="" alt="Miniatura" />
+        </div>
+        <div class="video-meta">
+          <div class="video-title" id="title"></div>
+          <span class="video-duration" id="duration"></span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <label class="field-label">Calidad y formato</label>
+      <select id="formats"></select>
+
+      <button class="btn btn-download" onclick="downloadVideo()" id="btn-download">
+        ⬇ Descargar
+      </button>
+    </div>
+
+    <footer>
+      Solo para uso personal · Respeta los derechos de autor
+    </footer>
+
+  </div>
+
+  <script>
+    let currentUrl = "";
+    let formatsData = [];
+
+    function setStatus(msg, type, showSpinner = false) {
+      const box = document.getElementById("status-box");
+      const text = document.getElementById("status-text");
+      const spinner = document.getElementById("spinner");
+
+      if (!msg) { box.style.display = "none"; return; }
+
+      box.className = type;
+      text.textContent = msg;
+      spinner.style.display = showSpinner ? "block" : "none";
+    }
+
+    async function getInfo() {
+      const url = document.getElementById("url").value.trim();
+      if (!url) { setStatus("Por favor ingresa una URL de YouTube.", "error"); return; }
+
+      currentUrl = url;
+      document.getElementById("info-box").style.display = "none";
+      document.getElementById("btn-search").disabled = true;
+      setStatus("Obteniendo información del video...", "info", true);
+
+      try {
+        const res = await fetch("/info", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await res.json();
+        if (data.error) { setStatus("Error: " + data.error, "error"); return; }
+
+        // Miniatura y título
+        document.getElementById("thumbnail").src = data.thumbnail;
+        document.getElementById("title").textContent = data.title;
+
+        const mins = Math.floor(data.duration / 60);
+        const secs = String(data.duration % 60).padStart(2, "0");
+        document.getElementById("duration").textContent = `${mins}:${secs}`;
+
+        // Formatos
+        formatsData = data.formats;
+        const select = document.getElementById("formats");
+        select.innerHTML = "";
+
+        formatsData.forEach((f, i) => {
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.textContent = f.wmv ? `🔵 ${f.label}` : `⚪ ${f.label}`;
+          select.appendChild(opt);
+        });
+
+        setStatus("", "");
+        const box = document.getElementById("info-box");
+        box.style.display = "block";
+        box.classList.remove("fade-in");
+        void box.offsetWidth;
+        box.classList.add("fade-in");
+
+      } catch (e) {
+        setStatus("Error de conexión con el servidor.", "error");
+      } finally {
+        document.getElementById("btn-search").disabled = false;
+      }
+    }
+
+    async function downloadVideo() {
+      const idx = document.getElementById("formats").value;
+      const fmt = formatsData[idx];
+
+      document.getElementById("btn-download").disabled = true;
+      const msg = fmt.wmv
+        ? "Descargando y convirtiendo a WMV... esto puede tardar unos minutos."
+        : "Descargando... por favor espera.";
+      setStatus(msg, "info", true);
+
+      try {
+        const res = await fetch("/download", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: currentUrl, height: fmt.height, ext: fmt.ext, wmv: fmt.wmv })
+        });
+
+        const data = await res.json();
+        if (data.error) { setStatus("Error: " + data.error, "error"); return; }
+        setStatus(data.message, "success");
+
+      } catch (e) {
+        setStatus("Error de conexión con el servidor.", "error");
+      } finally {
+        document.getElementById("btn-download").disabled = false;
+      }
+    }
+
+    // Permitir Enter en el input
+    document.getElementById("url").addEventListener("keydown", e => {
+      if (e.key === "Enter") getInfo();
+    });
+  </script>
+</body>
+</html>
