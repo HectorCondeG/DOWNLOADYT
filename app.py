@@ -9,9 +9,12 @@ app = Flask(__name__)
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
+user_folder = os.path.expanduser("~")
+folder_name = os.path.basename(user_folder)
+
 # Rutas explícitas — no dependen del PATH de Windows
 NODE_PATH  = r"C:\Program Files\nodejs\node.exe"
-FFMPEG_DIR = r"C:\Users\hecto\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1-full_build\bin"
+FFMPEG_DIR = rf"C:\Users\{folder_name}\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1-full_build\bin"
 FFMPEG_EXE = os.path.join(FFMPEG_DIR, "ffmpeg.exe")
 
 # Opciones base para todas las llamadas a yt-dlp
