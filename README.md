@@ -8,7 +8,7 @@ Tambien el usuario debera ejecutar el comando
 
 winget install ffmpeg 
 
-finalizando la descarga de recursos necesarios.
+Finalizando la descarga de recursos necesarios.
 
 Finalmente deberá ejecutar el comando 
 
@@ -19,3 +19,6 @@ python ./app.py
 una vez aparezca como la imagen anterior, debera abrir la ruta local posicionandose arriba de la ruta local y presionando ctrl + click izquierdo para abrir la app.
 
 <img width="1468" height="1037" alt="image" src="https://github.com/user-attachments/assets/deb9b4cd-9fba-4b2e-b77c-96dba70c21ab" />
+
+
+NOTA: Verificar la ruta del ffmpeg, puede que se instale una version anterior a la actual
