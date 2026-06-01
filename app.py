@@ -14,7 +14,7 @@ folder_name = os.path.basename(user_folder)
 
 # Rutas explícitas — no dependen del PATH de Windows
 NODE_PATH  = r"C:\Program Files\nodejs\node.exe"
-FFMPEG_DIR = rf"C:\Users\{folder_name}\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1-full_build\bin"
+FFMPEG_DIR = rf"C:\Users\{folder_name}\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1.1-full_build\bin"
 FFMPEG_EXE = os.path.join(FFMPEG_DIR, "ffmpeg.exe")
 
 # Opciones base para todas las llamadas a yt-dlp
@@ -226,4 +226,4 @@ def download():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
